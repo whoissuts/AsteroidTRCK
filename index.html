@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEO Hazard Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface-2: #f7f8fa;
+    --border: #e2e6ed;
+    --text: #0d1117;
+    --text-2: #5a6478;
+    --text-3: #9aa0b0;
+    --accent: #0057ff;
+    --danger: #e8210a;
+    --danger-light: #fff1ef;
+    --danger-border: #fcc9c3;
+    --warning: #e07b00;
+    --warning-light: #fff8ed;
+    --warning-border: #fddba0;
+    --safe: #00875a;
+    --safe-light: #edfaf4;
+    --safe-border: #b3ecd8;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --radius-sm: 7px;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: ‘Syne’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100vh;
+padding: 0 0 60px;
+}
+
+/* Header */
+header {
+background: var(–surface);
+border-bottom: 1px solid var(–border);
+padding: 0 40px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+height: 64px;
+position: sticky;
+top: 0;
+z-index: 100;
+box-shadow: var(–shadow-sm);
+}
+
+.logo {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.logo-icon {
+width: 36px; height: 36px;
+background: var(–text);
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+font-size: 18px;
+}
+
+.logo-text {
+font-size: 17px;
+font-weight: 800;
+letter-spacing: -0.3px;
+color: var(–text);
+}
+
+.logo-sub {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+color: var(–text-3);
+letter-spacing: 1px;
+text-transform: uppercase;
+margin-top: 1px;
+}
+
+.header-right {
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+.data-source {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+color: var(–text-3);
+letter-spacing: 0.5px;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.live-dot {
+width: 7px; height: 7px;
+border-radius: 50%;
+background: var(–safe);
+animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 1; transform: scale(1); }
+50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Main layout */
+main {
+max-width: 1100px;
+margin: 0 auto;
+padding: 36px 40px 0;
+}
+
+/* Date range bar */
+.date-bar {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 28px;
+flex-wrap: wrap;
+gap: 14px;
+}
+
+.date-title {
+font-size: 24px;
+font-weight: 800;
+letter-spacing: -0.5px;
+}
+
+.date-subtitle {
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+color: var(–text-3);
+margin-top: 3px;
+letter-spacing: 0.5px;
+}
+
+.date-controls {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.date-inputs {
+display: flex;
+align-items: center;
+gap: 8px;
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius-sm);
+padding: 6px 12px;
+box-shadow: var(–shadow-sm);
+}
+
+.date-inputs label {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+color: var(–text-3);
+letter-spacing: 0.5px;
+text-transform: uppercase;
+}
+
+.date-inputs input[type=“date”] {
+font-family: ‘DM Mono’, monospace;
+font-size: 12px;
+color: var(–text);
+border: none;
+outline: none;
+background: transparent;
+cursor: pointer;
+}
+
+.date-sep {
+color: var(–border);
+font-size: 16px;
+}
+
+.fetch-btn {
+background: var(–text);
+color: white;
+border: none;
+border-radius: var(–radius-sm);
+padding: 9px 18px;
+font-family: ‘Syne’, sans-serif;
+font-size: 13px;
+font-weight: 700;
+cursor: pointer;
+transition: background 0.15s, transform 0.1s;
+letter-spacing: 0.2px;
+}
+.fetch-btn:hover { background: #1a2030; }
+.fetch-btn:active { transform: scale(0.97); }
+
+/* Summary cards */
+.summary-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 14px;
+margin-bottom: 28px;
+}
+
+.summary-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius);
+padding: 20px;
+box-shadow: var(–shadow-sm);
+transition: box-shadow 0.2s;
+animation: fadeUp 0.4s ease both;
+}
+
+.summary-card:hover { box-shadow: var(–shadow); }
+
+.summary-card.danger {
+background: var(–danger-light);
+border-color: var(–danger-border);
+}
+
+.card-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+color: var(–text-3);
+letter-spacing: 1px;
+text-transform: uppercase;
+margin-bottom: 10px;
+}
+
+.card-value {
+font-size: 32px;
+font-weight: 800;
+letter-spacing: -1px;
+line-height: 1;
+}
+
+.card-value.danger { color: var(–danger); }
+.card-value.warning { color: var(–warning); }
+.card-value.safe { color: var(–safe); }
+
+.card-sub {
+font-size: 11px;
+color: var(–text-3);
+margin-top: 6px;
+font-weight: 600;
+}
+
+/* Filters */
+.filter-bar {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 20px;
+flex-wrap: wrap;
+}
+
+.filter-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+color: var(–text-3);
+letter-spacing: 1px;
+text-transform: uppercase;
+}
+
+.filter-chip {
+background: var(–surface);
+border: 1.5px solid var(–border);
+border-radius: 99px;
+padding: 5px 14px;
+font-size: 12px;
+font-weight: 700;
+cursor: pointer;
+transition: all 0.15s;
+color: var(–text-2);
+}
+
+.filter-chip:hover { border-color: var(–text-2); color: var(–text); }
+.filter-chip.active { background: var(–text); color: white; border-color: var(–text); }
+.filter-chip.active.danger-chip { background: var(–danger); border-color: var(–danger); }
+
+/* Sort */
+.sort-select {
+margin-left: auto;
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+color: var(–text-2);
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius-sm);
+padding: 6px 10px;
+outline: none;
+cursor: pointer;
+}
+
+/* Asteroid list */
+.asteroid-list {
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+
+.asteroid-card {
+background: var(–surface);
+border: 1.5px solid var(–border);
+border-radius: var(–radius);
+padding: 20px 24px;
+display: grid;
+grid-template-columns: 40px 1fr auto;
+align-items: center;
+gap: 20px;
+cursor: pointer;
+transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+box-shadow: var(–shadow-sm);
+animation: fadeUp 0.4s ease both;
+}
+
+.asteroid-card:hover {
+box-shadow: var(–shadow);
+border-color: #c8cdd8;
+transform: translateY(-1px);
+}
+
+.asteroid-card.hazardous {
+border-color: var(–danger-border);
+background: linear-gradient(135deg, #fff 0%, var(–danger-light) 100%);
+}
+
+.asteroid-card.hazardous:hover { border-color: var(–danger); }
+
+.hazard-indicator {
+width: 40px; height: 40px;
+border-radius: 10px;
+display: flex; align-items: center; justify-content: center;
+font-size: 20px;
+flex-shrink: 0;
+}
+
+.hazard-indicator.danger { background: var(–danger-light); }
+.hazard-indicator.safe { background: var(–safe-light); }
+
+.asteroid-main { min-width: 0; }
+
+.asteroid-name {
+font-size: 15px;
+font-weight: 700;
+letter-spacing: -0.2px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+margin-bottom: 5px;
+}
+
+.asteroid-meta {
+display: flex;
+flex-wrap: wrap;
+gap: 14px;
+}
+
+.meta-item {
+display: flex;
+flex-direction: column;
+gap: 1px;
+}
+
+.meta-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 9px;
+color: var(–text-3);
+letter-spacing: 0.8px;
+text-transform: uppercase;
+}
+
+.meta-value {
+font-family: ‘DM Mono’, monospace;
+font-size: 12px;
+font-weight: 500;
+color: var(–text);
+}
+
+.meta-value.danger { color: var(–danger); }
+.meta-value.warning { color: var(–warning); }
+
+/* Right side of card */
+.asteroid-right {
+display: flex;
+flex-direction: column;
+align-items: flex-end;
+gap: 8px;
+flex-shrink: 0;
+}
+
+.hazard-badge {
+font-family: ‘DM Mono’, monospace;
+font-size: 9px;
+font-weight: 500;
+letter-spacing: 1px;
+text-transform: uppercase;
+padding: 4px 10px;
+border-radius: 99px;
+white-space: nowrap;
+}
+
+.hazard-badge.danger { background: var(–danger-light); color: var(–danger); border: 1px solid var(–danger-border); }
+.hazard-badge.safe { background: var(–safe-light); color: var(–safe); border: 1px solid var(–safe-border); }
+
+/* Size bar */
+.size-bar-wrap {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.size-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 9px;
+color: var(–text-3);
+white-space: nowrap;
+}
+
+.size-bar-bg {
+width: 80px; height: 6px;
+background: var(–bg);
+border-radius: 3px;
+overflow: hidden;
+border: 1px solid var(–border);
+}
+
+.size-bar {
+height: 100%;
+border-radius: 3px;
+background: linear-gradient(90deg, var(–accent), #00b4ff);
+transition: width 0.6s ease;
+}
+
+.size-bar.danger { background: linear-gradient(90deg, var(–danger), #ff7a6a); }
+
+/* Detail panel */
+.detail-panel {
+display: none;
+padding: 16px 24px 20px;
+border-top: 1px solid var(–border);
+margin-top: 16px;
+grid-column: 1 / -1;
+animation: expandIn 0.25s ease;
+}
+
+@keyframes expandIn {
+from { opacity: 0; transform: translateY(-8px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.detail-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+gap: 16px;
+}
+
+.detail-item { display: flex; flex-direction: column; gap: 3px; }
+
+.detail-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 9px;
+color: var(–text-3);
+letter-spacing: 0.8px;
+text-transform: uppercase;
+}
+
+.detail-value {
+font-family: ‘DM Mono’, monospace;
+font-size: 13px;
+font-weight: 500;
+color: var(–text);
+}
+
+.jpl-link {
+display: inline-flex;
+align-items: center;
+gap: 5px;
+margin-top: 12px;
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+color: var(–accent);
+text-decoration: none;
+font-weight: 500;
+}
+.jpl-link:hover { text-decoration: underline; }
+
+/* Empty / loading states */
+.state-box {
+background: var(–surface);
+border: 1.5px solid var(–border);
+border-radius: var(–radius);
+padding: 60px 40px;
+text-align: center;
+box-shadow: var(–shadow-sm);
+}
+
+.state-icon { font-size: 40px; margin-bottom: 16px; }
+
+.state-title {
+font-size: 18px;
+font-weight: 700;
+margin-bottom: 6px;
+}
+
+.state-sub {
+font-family: ‘DM Mono’, monospace;
+font-size: 12px;
+color: var(–text-3);
+}
+
+.spinner {
+width: 36px; height: 36px;
+border: 3px solid var(–border);
+border-top-color: var(–accent);
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(12px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+header { padding: 0 16px; }
+main { padding: 20px 16px 0; }
+.summary-grid { grid-template-columns: repeat(2, 1fr); }
+.asteroid-card { grid-template-columns: 36px 1fr; }
+.asteroid-right { display: none; }
+.date-bar { flex-direction: column; align-items: flex-start; }
+}
+
+.expand-icon {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+color: var(–text-3);
+transition: transform 0.2s;
+}
+
+.asteroid-card.open .expand-icon { transform: rotate(180deg); }
+
+.asteroid-inner {
+display: contents;
+}
+
+.card-wrapper {
+background: var(–surface);
+border: 1.5px solid var(–border);
+border-radius: var(–radius);
+overflow: hidden;
+cursor: pointer;
+transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+box-shadow: var(–shadow-sm);
+animation: fadeUp 0.4s ease both;
+}
+
+.card-wrapper:hover { box-shadow: var(–shadow); transform: translateY(-1px); }
+.card-wrapper.hazardous { border-color: var(–danger-border); background: linear-gradient(135deg, #fff 0%, var(–danger-light) 100%); }
+.card-wrapper.hazardous:hover { border-color: var(–danger); }
+
+.card-top {
+display: grid;
+grid-template-columns: 40px 1fr auto;
+align-items: center;
+gap: 20px;
+padding: 20px 24px;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">☄️</div>
+    <div>
+      <div class="logo-text">NEO Hazard Tracker</div>
+      <div class="logo-sub">Near-Earth Object Monitor</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="data-source">
+      <div class="live-dot"></div>
+      NASA NeoWs API
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="date-bar">
+    <div>
+      <div class="date-title" id="range-title">This Week's Close Approaches</div>
+      <div class="date-subtitle" id="range-subtitle">Loading date range...</div>
+    </div>
+    <div class="date-controls">
+      <div class="date-inputs">
+        <label>FROM</label>
+        <input type="date" id="start-date">
+        <span class="date-sep">→</span>
+        <label>TO</label>
+        <input type="date" id="end-date">
+      </div>
+      <button class="fetch-btn" onclick="fetchData()">FETCH</button>
+    </div>
+  </div>
+
+  <!-- Summary -->
+
+  <div class="summary-grid" id="summary-grid" style="display:none">
+    <div class="summary-card" style="animation-delay:0s">
+      <div class="card-label">Total Objects</div>
+      <div class="card-value" id="stat-total">—</div>
+      <div class="card-sub">In date range</div>
+    </div>
+    <div class="summary-card danger" style="animation-delay:0.05s">
+      <div class="card-label">⚠ Potentially Hazardous</div>
+      <div class="card-value danger" id="stat-hazardous">—</div>
+      <div class="card-sub">Classified by NASA</div>
+    </div>
+    <div class="summary-card" style="animation-delay:0.1s">
+      <div class="card-label">Closest Approach</div>
+      <div class="card-value warning" id="stat-closest">—</div>
+      <div class="card-sub" id="stat-closest-name">—</div>
+    </div>
+    <div class="summary-card" style="animation-delay:0.15s">
+      <div class="card-label">Largest Object</div>
+      <div class="card-value safe" id="stat-largest">—</div>
+      <div class="card-sub" id="stat-largest-name">—</div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+
+  <div class="filter-bar" id="filter-bar" style="display:none">
+    <span class="filter-label">SHOW</span>
+    <button class="filter-chip active" data-filter="all" onclick="setFilter('all', this)">All</button>
+    <button class="filter-chip danger-chip" data-filter="hazardous" onclick="setFilter('hazardous', this)">⚠ Hazardous Only</button>
+    <button class="filter-chip" data-filter="safe" onclick="setFilter('safe', this)">Safe Only</button>
+    <select class="sort-select" id="sort-select" onchange="renderList()">
+      <option value="date">Sort: Date</option>
+      <option value="miss_asc">Sort: Closest First</option>
+      <option value="miss_desc">Sort: Furthest First</option>
+      <option value="size_desc">Sort: Largest First</option>
+      <option value="speed_desc">Sort: Fastest First</option>
+    </select>
+  </div>
+
+  <!-- List -->
+
+  <div id="list-container">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div class="state-title">Scanning the skies...</div>
+      <div class="state-sub">Fetching data from NASA NeoWs API</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_KEY = 'DEMO_KEY';
+  const BASE = 'https://api.nasa.gov/neo/rest/v1/feed';
+
+  let allNeos = [];
+  let currentFilter = 'all';
+  let maxDiameter = 0;
+
+  // Init dates
+  function initDates() {
+    const today = new Date();
+    const end = new Date(today);
+    end.setDate(today.getDate() + 6);
+    document.getElementById('start-date').value = fmtDate(today);
+    document.getElementById('end-date').value = fmtDate(end);
+  }
+
+  function fmtDate(d) {
+    return d.toISOString().split('T')[0];
+  }
+
+  function fmtDateDisplay(str) {
+    const d = new Date(str + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function fmtNum(n, dec = 0) {
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+
+  async function fetchData() {
+    const start = document.getElementById('start-date').value;
+    const end = document.getElementById('end-date').value;
+
+    if (!start || !end) return;
+
+    // Clamp to 7 days (API limit)
+    const s = new Date(start), e = new Date(end);
+    const diff = (e - s) / 86400000;
+    if (diff > 7) {
+      alert('NASA API allows a maximum of 7 days per request. Please shorten your range.');
+      return;
+    }
+    if (diff < 0) {
+      alert('End date must be after start date.');
+      return;
+    }
+
+    document.getElementById('summary-grid').style.display = 'none';
+    document.getElementById('filter-bar').style.display = 'none';
+    document.getElementById('range-title').textContent = `Close Approaches`;
+    document.getElementById('range-subtitle').textContent = `${fmtDateDisplay(start)} → ${fmtDateDisplay(end)}`;
+
+    document.getElementById('list-container').innerHTML = `
+      <div class="state-box">
+        <div class="spinner"></div>
+        <div class="state-title">Scanning the skies...</div>
+        <div class="state-sub">Fetching data from NASA NeoWs API</div>
+      </div>`;
+
+    try {
+      const url = `${BASE}?start_date=${start}&end_date=${end}&api_key=${API_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const data = await res.json();
+
+      // Flatten all NEOs across all dates
+      allNeos = [];
+      Object.entries(data.near_earth_objects).forEach(([date, neos]) => {
+        neos.forEach(neo => {
+          const approach = neo.close_approach_data[0];
+          const dMin = neo.estimated_diameter.kilometers.estimated_diameter_min;
+          const dMax = neo.estimated_diameter.kilometers.estimated_diameter_max;
+          const dAvg = (dMin + dMax) / 2;
+          allNeos.push({
+            id: neo.id,
+            name: neo.name.replace(/[()]/g, '').trim(),
+            hazardous: neo.is_potentially_hazardous_asteroid,
+            magnitude: neo.absolute_magnitude_h,
+            diameter_min: dMin,
+            diameter_max: dMax,
+            diameter_avg: dAvg,
+            date: approach?.close_approach_date || date,
+            time: approach?.close_approach_date_full || '',
+            miss_km: parseFloat(approach?.miss_distance?.kilometers || 0),
+            miss_lunar: parseFloat(approach?.miss_distance?.lunar || 0),
+            miss_au: parseFloat(approach?.miss_distance?.astronomical || 0),
+            velocity_kph: parseFloat(approach?.relative_velocity?.kilometers_per_hour || 0),
+            velocity_kms: parseFloat(approach?.relative_velocity?.kilometers_per_second || 0),
+            orbiting: approach?.orbiting_body || 'Earth',
+            jpl_url: neo.nasa_jpl_url,
+            orbit_class: neo.orbital_data?.orbit_class?.orbit_class_description || '—',
+          });
+        });
+      });
+
+      maxDiameter = Math.max(...allNeos.map(n => n.diameter_avg));
+
+      // Update summary
+      const hazCount = allNeos.filter(n => n.hazardous).length;
+      const closest = allNeos.reduce((a, b) => a.miss_km < b.miss_km ? a : b);
+      const largest = allNeos.reduce((a, b) => a.diameter_avg > b.diameter_avg ? a : b);
+
+      document.getElementById('stat-total').textContent = fmtNum(allNeos.length);
+      document.getElementById('stat-hazardous').textContent = fmtNum(hazCount);
+      document.getElementById('stat-closest').textContent = fmtNum(closest.miss_km) + ' km';
+      document.getElementById('stat-closest-name').textContent = closest.name;
+      document.getElementById('stat-largest').textContent = fmtNum(largest.diameter_avg * 1000) + ' m';
+      document.getElementById('stat-largest-name').textContent = largest.name;
+
+      document.getElementById('summary-grid').style.display = 'grid';
+      document.getElementById('filter-bar').style.display = 'flex';
+
+      currentFilter = 'all';
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelector('[data-filter="all"]').classList.add('active');
+
+      renderList();
+
+    } catch (err) {
+      document.getElementById('list-container').innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">⚠️</div>
+          <div class="state-title">Failed to fetch data</div>
+          <div class="state-sub">${err.message}<br><br>DEMO_KEY has rate limits. Wait a minute and try again.</div>
+        </div>`;
+    }
+  }
+
+  function setFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderList();
+  }
+
+  function getSorted(neos) {
+    const sort = document.getElementById('sort-select').value;
+    const copy = [...neos];
+    if (sort === 'date') copy.sort((a, b) => a.date.localeCompare(b.date));
+    else if (sort === 'miss_asc') copy.sort((a, b) => a.miss_km - b.miss_km);
+    else if (sort === 'miss_desc') copy.sort((a, b) => b.miss_km - a.miss_km);
+    else if (sort === 'size_desc') copy.sort((a, b) => b.diameter_avg - a.diameter_avg);
+    else if (sort === 'speed_desc') copy.sort((a, b) => b.velocity_kph - a.velocity_kph);
+    return copy;
+  }
+
+  function renderList() {
+    let filtered = allNeos;
+    if (currentFilter === 'hazardous') filtered = allNeos.filter(n => n.hazardous);
+    if (currentFilter === 'safe') filtered = allNeos.filter(n => !n.hazardous);
+
+    const sorted = getSorted(filtered);
+
+    if (sorted.length === 0) {
+      document.getElementById('list-container').innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">🔭</div>
+          <div class="state-title">No objects match this filter</div>
+          <div class="state-sub">Try adjusting the filter above</div>
+        </div>`;
+      return;
+    }
+
+    const html = sorted.map((neo, i) => buildCard(neo, i)).join('');
+    document.getElementById('list-container').innerHTML = `<div class="asteroid-list">${html}</div>`;
+  }
+
+  function buildCard(neo, i) {
+    const hazClass = neo.hazardous ? 'hazardous' : '';
+    const icon = neo.hazardous ? '☄️' : '🪨';
+    const iconClass = neo.hazardous ? 'danger' : 'safe';
+    const badge = neo.hazardous
+      ? '<span class="hazard-badge danger">⚠ POTENTIALLY HAZARDOUS</span>'
+      : '<span class="hazard-badge safe">✓ NON-HAZARDOUS</span>';
+
+    const missColor = neo.miss_km < 1000000 ? 'danger' : neo.miss_km < 5000000 ? 'warning' : '';
+    const sizePct = Math.min(100, Math.round((neo.diameter_avg / maxDiameter) * 100));
+    const sizeBarClass = neo.hazardous ? 'danger' : '';
+    const delay = Math.min(i * 0.04, 0.6);
+
+    return `
+    <div class="card-wrapper ${hazClass}" style="animation-delay:${delay}s" onclick="toggleDetail('detail-${neo.id}', this)">
+      <div class="card-top">
+        <div class="hazard-indicator ${iconClass}">${icon}</div>
+        <div class="asteroid-main">
+          <div class="asteroid-name">${neo.name}</div>
+          <div class="asteroid-meta">
+            <div class="meta-item">
+              <span class="meta-label">APPROACH DATE</span>
+              <span class="meta-value">${fmtDateDisplay(neo.date)}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">MISS DISTANCE</span>
+              <span class="meta-value ${missColor}">${fmtNum(neo.miss_km)} km</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">VELOCITY</span>
+              <span class="meta-value">${fmtNum(neo.velocity_kph)} km/h</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">EST. DIAMETER</span>
+              <span class="meta-value">${fmtNum(neo.diameter_avg * 1000, 0)} m</span>
+            </div>
+          </div>
+        </div>
+        <div class="asteroid-right">
+          ${badge}
+          <div class="size-bar-wrap">
+            <span class="size-label">SIZE</span>
+            <div class="size-bar-bg"><div class="size-bar ${sizeBarClass}" style="width:${sizePct}%"></div></div>
+          </div>
+          <span class="expand-icon">▼</span>
+        </div>
+      </div>
+      <div class="detail-panel" id="detail-${neo.id}">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">FULL APPROACH TIME</span>
+            <span class="detail-value">${neo.time || '—'}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">MISS DISTANCE (LUNAR)</span>
+            <span class="detail-value">${fmtNum(neo.miss_lunar, 2)} LD</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">MISS DISTANCE (AU)</span>
+            <span class="detail-value">${fmtNum(neo.miss_au, 4)} AU</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">VELOCITY (KM/S)</span>
+            <span class="detail-value">${fmtNum(neo.velocity_kms, 2)} km/s</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">DIAMETER MIN</span>
+            <span class="detail-value">${fmtNum(neo.diameter_min * 1000, 0)} m</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">DIAMETER MAX</span>
+            <span class="detail-value">${fmtNum(neo.diameter_max * 1000, 0)} m</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">ABSOLUTE MAGNITUDE</span>
+            <span class="detail-value">${neo.magnitude} H</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">ORBITING BODY</span>
+            <span class="detail-value">${neo.orbiting}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">NASA ID</span>
+            <span class="detail-value">${neo.id}</span>
+          </div>
+        </div>
+        <a class="jpl-link" href="${neo.jpl_url}" target="_blank" rel="noopener">
+          View on NASA JPL ↗
+        </a>
+      </div>
+    </div>`;
+  }
+
+  function toggleDetail(id, card) {
+    const panel = document.getElementById(id);
+    const isOpen = panel.style.display === 'block';
+    // Close all
+    document.querySelectorAll('.detail-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.card-wrapper').forEach(c => c.classList.remove('open'));
+    if (!isOpen) {
+      panel.style.display = 'block';
+      card.classList.add('open');
+    }
+  }
+
+  initDates();
+  fetchData();
+</script>
+
+</body>
+</html>
